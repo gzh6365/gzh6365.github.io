@@ -1,0 +1,200 @@
+﻿<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=1,user-scalable=no"
+    />
+    <title>
+      Intro to MapView - Create a 2D map | Sample | ArcGIS API for JavaScript
+      4.23
+    </title>
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 97%;
+        width: 100%;
+      }
+       .yemei
+       {
+      box-sizing: border-box;
+         height: 45px;
+         width: 100%;
+         background-color:#C0C0A5;
+         font-size: 30px;
+         color: black;
+         /*padding-left: 20px;*/
+       }
+    </style>
+
+    <link
+      rel="stylesheet"
+      href="https://js.arcgis.com/4.23/esri/themes/light/main.css"
+    />
+    <script src="https://js.arcgis.com/4.23/"></script>
+
+    <script>
+      require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/layers/FeatureLayer",
+        "esri/layers/TileLayer",
+        "esri/widgets/Legend",
+        "esri/widgets/ScaleBar",
+        "esri/widgets/LayerList",
+        "esri/widgets/Search",
+        "esri/widgets/BasemapGallery",
+        "esri/widgets/Home",
+        "esri/widgets/Print",
+        "esri/widgets/DistanceMeasurement2D",
+        "esri/widgets/Expand"
+      ], (
+        Map,
+        MapView,
+        FeatureLayer,
+        TileLayer,
+        Legend,
+        ScaleBar,
+        LayerList,
+        Search,
+        BasemapGallery,
+        Home,
+        Print,
+        DistanceMeasurement2D,
+        Expand
+      ) => {
+        var flayer = new FeatureLayer({
+          url: "https://www.geosceneonline.cn/server/rest/services/Hosted/%E4%B8%AD%E5%9B%BD%E7%9C%81%E4%BC%9A%E4%BA%BA%E5%8F%A3%E6%95%B0%E9%87%8F/FeatureServer"
+        });
+        var tiledlayer = new TileLayer({
+          url: "https://tiles.arcgis.com/tiles/nzS0F0zdNLvs7nc8/arcgis/rest/services/China_PopDens_2020/MapServer"
+        });
+
+        var map1 = new Map({
+          basemap: "topo"
+          //layers:[flayer,tiledlayer]
+        });
+        //map1.layers.add(flayer);
+        //map1.layers.add(tiledlayer);
+
+        map1.addMany([flayer, tiledlayer]);
+        //map1.layers.addMany([flayer,tiledlayer]);
+        //map1.layers.push(flayer,tiledlayer);
+
+        var view1 = new MapView({
+          container: "viewDiv",
+          map: map1,
+          zoom: 4,
+          center: [105, 35] // longitude, latitude
+        });
+
+        var legend1 = new Legend({
+          view: view1,
+          layerInfos: [{
+              layer:flayer,
+              title:"省会人口"
+            }]
+        });
+
+        var scaleBar1 = new ScaleBar({
+          view: view1,
+          style: "ruler",
+          unit: "metric"
+        });
+
+        var coordswidget = document.createElement("div");
+        coordswidget.id = "coordswidget";
+        coordswidget.className = "esri-widget esri-component";
+        coordswidget.style.padding = "7px 15px 5px";
+
+        view1.ui.add(coordswidget, "top-right");
+        function showCoordinates(pt) {
+          var coords =
+            "Lat/Lon " +
+            pt.latitude.toFixed(3) +
+            " " +
+            pt.longitude.toFixed(3) +
+            " | Scale 1:" +
+            Math.round(view1.scale * 1) / 1 +
+            " | Zoom " +
+            view1.zoom;
+          coordswidget.innerHTML = coords;
+        }
+        view1.watch("stationary", function (isStationary) {
+          showCoordinates(view1.center);
+        });
+
+        view1.on("pointer-move", function (evt) {
+          showCoordinates(view1.toMap({ x: evt.x, y: evt.y }));
+        });
+
+        var layerList1 = new LayerList({
+          view: view1
+        });
+
+        var searchWidget1 = new Search({
+          view: view1
+        });
+
+        var basemapGallery1 = new BasemapGallery({
+          view: view1
+        });
+
+        var home = new Home({
+          view: view1
+        });
+
+        var print1 = new Print({
+          view: view1,
+
+          printServiceUrl:
+            "https://utility.arcgisonline.com/arcgis/rest/services/Utilities/PrintingTools/GPServer/Export%20Web%20Map%20Task"
+        });
+
+        let measurementWidget1 = new DistanceMeasurement2D({
+          view: view1
+        });
+
+        let laExpand = new Expand({
+          view: view1,
+          content: layerList1
+        });
+
+        let baExpand = new Expand({
+          view: view1,
+          content: basemapGallery1
+        });
+
+        let prExpand = new Expand({
+          view: view1,
+          content: print1
+        });
+
+        let meExpand = new Expand({
+          view: view1,
+          content: measurementWidget1,
+          expanded: false
+        });
+
+        view1.ui.add(laExpand, "top-right");
+        view1.ui.add(baExpand, "top-right");
+        view1.ui.add(prExpand, "top-right");
+        view1.ui.add(meExpand, "top-right");
+        view1.ui.add(home, "top-left");
+        view1.ui.add(searchWidget1, "top-left");
+        view1.ui.add(scaleBar1, "bottom-left");
+        view1.ui.add(legend1, "bottom-right");
+      });
+    </script>
+  </head>
+
+  <body>
+    <div class="yemei">
+      <b>中国人口情况</b>
+    </div>
+    <div id="viewDiv"></div>
+  </body>
+</html>
